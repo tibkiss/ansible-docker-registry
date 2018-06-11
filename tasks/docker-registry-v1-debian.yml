@@ -67,7 +67,7 @@
     notify: restart nginx
 
   - htpasswd: path=/etc/nginx/docker-registry.htpasswd name={{item.name}} password={{item.password}} owner=root group=root mode=0644
-    with_items: docker.registry.users
+    with_items: "{{ docker.registry.users }}"
     sudo: yes
     notify: restart nginx
 

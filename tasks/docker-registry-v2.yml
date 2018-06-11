@@ -16,8 +16,9 @@
       cache_valid_time: 3600
     sudo: yes
     with_items:
-      - python-dev
-      - python-setuptools #easy_install
+      - python3-dev
+      - python3-setuptools #easy_install
+      - python3-pip
     when: ansible_os_family == "Debian"
 
   - include: pip.yml
@@ -105,13 +106,22 @@
     when: docker.registry.with_ssl|bool and (not docker_registry_cert_stat.stat.exists)
 
   - htpasswd: path=/etc/nginx/conf.d/registry.htpasswd name={{item.name}} password={{item.password}} owner=root group=root mode=0644
-    with_items: docker.registry.users
+    with_items: "{{ docker.registry.users }}"
     sudo: yes
     register: docker_registry_auth
 
   - template: src=docker-registry-v2.j2 dest=/etc/nginx/conf.d/docker-registry.conf owner=root group=root mode=0644
     register: docker_registry_vhost
     sudo: yes
+
+  - name: Install SE Linux tools for Debian/Ubuntu
+    apt:
+      pkg: policycoreutils
+      state: latest
+      update_cache: yes
+      cache_valid_time: 3600
+    sudo: yes
+    when: ansible_os_family == "Debian"
 
   - name: check if selinux is enabled
     command: getenforce
@@ -135,7 +145,7 @@
     ignore_errors: yes
     sudo: yes
 
-  - name: ensure Docker nginx is running
+  - name: ensure Docker nginx is running at {{docker.registry.ip}}:{{docker.registry.port}}
     command: "docker run -d -p {{docker.registry.ip}}:{{docker.registry.port}}:443 --name www-registry --net=bridge --privileged=true --restart=always --memory=\"512m\" --hostname={{ docker.registry.host }} --link=\"registry:registry\" -v /var/log/nginx/:/var/log/nginx:rw -v /etc/nginx/conf.d:/etc/nginx/conf.d:ro -v /etc/nginx/certs:/etc/nginx/certs:ro nginx:latest"
     register: start_nginx
     sudo: yes

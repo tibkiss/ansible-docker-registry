@@ -1,9 +1,12 @@
 ---
 
   # We must install pip before we can use the pip module below
-  - easy_install: name=pip #state=latest required ansible 2.x
+  - easy_install:
+      name: pip #state=latest required ansible 2.x
+      executable: easy_install3
     environment: "{{proxy_env}}"
     sudo: yes
+    when: ansible_os_family == "RedHat"
 
   # Upgrade pip to fix docker-py/issues/525
   # Install latest version when no specific release is set.
