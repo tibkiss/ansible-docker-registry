@@ -22,7 +22,7 @@
     sudo: yes
     when: not local_certificate.stat.exists
 
-  - name: create server key and certificate
+  - name: "create server key and certificate for {{docker.registry.host}}"
     shell: openssl req -config /tmp/openssl.cnf -newkey rsa:2048 -nodes -x509 -subj "/C=/ST=/L=/O=/CN={{docker.registry.host}}" -days 3650 -keyout /tmp/domain.key -out /tmp/domain.crt
     sudo: yes
     when: not local_certificate.stat.exists

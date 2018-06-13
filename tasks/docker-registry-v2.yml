@@ -146,6 +146,8 @@
     sudo: yes
 
   - name: ensure Docker nginx is running at {{docker.registry.ip}}:{{docker.registry.port}}
-    command: "docker run -d -p {{docker.registry.ip}}:{{docker.registry.port}}:443 --name www-registry --net=bridge --privileged=true --restart=always --memory=\"512m\" --hostname={{ docker.registry.host }} --link=\"registry:registry\" -v /var/log/nginx/:/var/log/nginx:rw -v /etc/nginx/conf.d:/etc/nginx/conf.d:ro -v /etc/nginx/certs:/etc/nginx/certs:ro nginx:latest"
+    # XXX: We cannot listen to one specific port if the registry is running as part of the k8s cluster:
+    # due to k8s dns setup the host resolves to 127.0.1.1
+    command: "docker run -d -p 0.0.0.0:{{docker.registry.port}}:443 --name www-registry --net=bridge --privileged=true --restart=always --memory=\"512m\" --hostname={{ docker.registry.host }} --link=\"registry:registry\" -v /var/log/nginx/:/var/log/nginx:rw -v /etc/nginx/conf.d:/etc/nginx/conf.d:ro -v /etc/nginx/certs:/etc/nginx/certs:ro nginx:latest"
     register: start_nginx
     sudo: yes
