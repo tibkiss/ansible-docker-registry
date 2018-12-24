@@ -17,13 +17,8 @@
     sudo: yes
     when: not local_certificate.stat.exists and ansible_os_family == "Debian"
 
-  - name: "update openssl configuration with IP: {{docker.registry.ip}}"
-    shell: sed -i "/\[ v3_ca \]/a subjectAltName = IP:{{docker.registry.ip}}" /tmp/openssl.cnf
-    sudo: yes
-    when: not local_certificate.stat.exists
-
   - name: "create server key and certificate for {{docker.registry.host}}"
-    shell: openssl req -config /tmp/openssl.cnf -newkey rsa:2048 -nodes -x509 -subj "/C=/ST=/L=/O=/CN={{docker.registry.host}}" -days 3650 -keyout /tmp/domain.key -out /tmp/domain.crt
+    shell: openssl req -config /tmp/openssl.cnf -newkey rsa:2048 -nodes -x509 -subj "/CN={{docker.registry.host}}" -days 3650 -keyout /tmp/domain.key -out /tmp/domain.crt
     sudo: yes
     when: not local_certificate.stat.exists
 
